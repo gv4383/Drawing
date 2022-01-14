@@ -157,14 +157,69 @@ import SwiftUI
 //}
 
 // Part 5 - Creative borders and fills using ImagePaint
-struct ContentView: View {
+//struct ContentView: View {
+//    var body: some View {
+////        Text("Hello, world!")
+////            .frame(width: 300, height: 300)
+////            .border(ImagePaint(image: Image("Example"), sourceRect: CGRect(x: 0, y: 0.4, width: 1, height: 0.5), scale: 0.1), width: 50)
+//        Capsule()
+//            .strokeBorder(ImagePaint(image: Image("Example"), sourceRect: CGRect(x: 0, y: 0.25, width: 1, height: 0.5), scale: 0.3), lineWidth: 20)
+//            .frame(width: 300, height: 200)
+//    }
+//}
+
+// Part 6 - Enabling high-performance Metal rendering with drawingGroup()
+struct ColorCyclingCircle: View {
+    var amount = 0.0
+    var steps = 100
+    
     var body: some View {
-//        Text("Hello, world!")
-//            .frame(width: 300, height: 300)
-//            .border(ImagePaint(image: Image("Example"), sourceRect: CGRect(x: 0, y: 0.4, width: 1, height: 0.5), scale: 0.1), width: 50)
-        Capsule()
-            .strokeBorder(ImagePaint(image: Image("Example"), sourceRect: CGRect(x: 0, y: 0.25, width: 1, height: 0.5), scale: 0.3), lineWidth: 20)
-            .frame(width: 300, height: 200)
+        ZStack {
+            ForEach(0..<steps) { value in
+//                Circle()
+//                    .inset(by: Double(value))
+//                    .strokeBorder(color(for: value, brightness: 1), lineWidth: 2)
+                Circle()
+                    .inset(by: Double(value))
+                    .strokeBorder(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                color(for: value, brightness: 1),
+                                color(for: value, brightness: 0.5)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 2
+                    )
+            }
+        }
+        // Needed for second Circle view above ^
+        // (use ONLY when you have performance problems)
+        .drawingGroup()
+    }
+    
+    func color(for value: Int, brightness: Double) -> Color {
+        var targetHue = Double(value) / Double(steps) + amount
+        
+        if targetHue > 1 {
+            targetHue -= 1
+        }
+        
+        return Color(hue: targetHue, saturation: 1, brightness: brightness)
+    }
+}
+
+struct ContentView: View {
+    @State private var colorCycle = 0.0
+    
+    var body: some View {
+        VStack {
+            ColorCyclingCircle(amount: colorCycle)
+                .frame(width: 300, height: 300)
+            
+            Slider(value: $colorCycle)
+        }
     }
 }
 
